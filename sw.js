@@ -1,11 +1,11 @@
-const CACHE_NAME = 'beanly-v2';
+const CACHE_NAME = 'beanly-v3';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/favicon.png'
+  './icon-192.png',
+  './icon-512.png',
+  './favicon.png'
 ];
 
 self.addEventListener('install', (event) => {
