@@ -1,6 +1,6 @@
 {
-  "name": "Bean Log",
-  "short_name": "Bean Log",
+  "name": "Beanly",
+  "short_name": "Beanly",
   "description": "Track grind size and pull time for every coffee bean",
   "start_url": "./index.html",
   "scope": "./",

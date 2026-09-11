@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Bean Log</title>
+<title>Beanly</title>
 <meta name="theme-color" content="#7A4E2D">
 <meta name="description" content="Track grind size and pull time for every coffee bean">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/favicon.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Bean Log">
+<meta name="apple-mobile-web-app-title" content="Beanly">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -185,6 +185,54 @@
   .table-scroll{
     overflow-x:auto;
   }
+  .top-row{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:28px;
+  }
+  header{
+    margin-bottom:0;
+  }
+  .history-btn{
+    background:none;
+    border:none;
+    color:var(--roast-dark);
+    opacity:0.55;
+    font-size:0.8rem;
+    font-family:inherit;
+    cursor:pointer;
+    padding:6px 4px;
+    text-decoration:underline;
+    text-decoration-color:transparent;
+    transition:opacity .15s ease, text-decoration-color .15s ease;
+    white-space:nowrap;
+    margin-top:6px;
+  }
+  .history-btn:hover{
+    opacity:0.9;
+    text-decoration-color:var(--roast-dark);
+  }
+  .view{ display:none; }
+  .view.active{ display:block; }
+  .back-btn{
+    background:none;
+    border:none;
+    color:var(--roast);
+    font-family:inherit;
+    font-size:0.88rem;
+    font-weight:600;
+    cursor:pointer;
+    padding:0 0 18px;
+  }
+  .pull-good{ color:#2E7D32; font-weight:600; }
+  .pull-bad{ color:#B3261E; font-weight:600; }
+  .history-row-date{
+    font-size:0.78rem;
+    color:var(--roast-dark);
+    opacity:0.75;
+  }
   .install-banner{
     display:none;
     align-items:center;
@@ -212,76 +260,104 @@
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
-      <path d="M6 13h18v9a7 7 0 0 1-7 7H13a7 7 0 0 1-7-7v-9z" stroke="#7A4E2D" stroke-width="2" fill="#FBF6EC"/>
-      <path d="M24 15h2.5a3.5 3.5 0 0 1 0 7H24" stroke="#7A4E2D" stroke-width="2" fill="none"/>
-      <path d="M11 9c0-1.5 1.5-1.8 1.5-3.2M16 9c0-1.5 1.5-1.8 1.5-3.2" stroke="#C9AE8C" stroke-width="2" stroke-linecap="round"/>
-    </svg>
-    <div>
-      <h1>Bean Log</h1>
-      <p class="sub">Track grind size and pull time for every bag</p>
-    </div>
-  </header>
+  <div class="top-row">
+    <header>
+      <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+        <rect width="34" height="34" rx="8" fill="#7A4E2D"/>
+        <ellipse cx="17" cy="17" rx="9" ry="12" fill="#FBF6EC" transform="rotate(-25 17 17)"/>
+        <path d="M13.5 24c1-2 2-3.5 3-6s1.5-4.5 1-7" stroke="#7A4E2D" stroke-width="1.6" stroke-linecap="round" fill="none" transform="rotate(-25 17 17)"/>
+      </svg>
+      <div>
+        <h1>Beanly</h1>
+      </div>
+    </header>
+    <button class="history-btn" id="historyToggleBtn">History</button>
+  </div>
 
   <div class="install-banner" id="installBanner">
-    <span>Install Bean Log on this device for one-tap access.</span>
+    <span>Install Beanly on this device for one-tap access.</span>
     <button id="installBtn">Install</button>
   </div>
 
-  <div class="card">
-    <h2>Log a brew</h2>
-    <div class="field">
-      <label for="beanInput">Bean</label>
-      <input type="text" id="beanInput" list="beanOptions" placeholder="Type or pick a bean name" autocomplete="off">
-      <datalist id="beanOptions"></datalist>
+  <div class="view active" id="mainView">
+    <div class="card">
+      <h2>Log a brew</h2>
+      <div class="field">
+        <label for="beanInput">Bean</label>
+        <input type="text" id="beanInput" list="beanOptions" placeholder="Type or pick a bean name" autocomplete="off">
+        <datalist id="beanOptions"></datalist>
+      </div>
+
+      <div id="revealSection" class="reveal">
+        <div class="date-line">Logging for <b id="todayLabel"></b></div>
+        <div class="row2">
+          <div class="field">
+            <label for="grindInput">Grind size</label>
+            <input type="number" id="grindInput" placeholder="e.g. 18" step="0.1">
+          </div>
+          <div class="field">
+            <label for="timeInput">Pull time (sec)</label>
+            <input type="number" id="timeInput" placeholder="e.g. 28" step="1">
+          </div>
+        </div>
+        <div class="field">
+          <label for="commentsInput">Comments</label>
+          <input type="text" id="commentsInput" placeholder="Optional notes — sour, fast pour, etc.">
+        </div>
+        <button class="primary" id="saveBtn">Log brew</button>
+        <div class="status" id="statusMsg"></div>
+      </div>
     </div>
 
-    <div id="revealSection" class="reveal">
-      <div class="date-line">Logging for <b id="todayLabel"></b></div>
-      <div class="row2">
-        <div class="field">
-          <label for="grindInput">Grind size</label>
-          <input type="number" id="grindInput" placeholder="e.g. 18" step="0.1">
-        </div>
-        <div class="field">
-          <label for="timeInput">Pull time (sec)</label>
-          <input type="number" id="timeInput" placeholder="e.g. 28" step="1">
-        </div>
+    <div class="card">
+      <h2>Beans</h2>
+      <div class="table-scroll">
+        <table id="beanTable">
+          <thead>
+            <tr>
+              <th>Bean</th>
+              <th>Last used</th>
+              <th>Grind</th>
+              <th>Pull time</th>
+              <th>Comments</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+        <div class="empty" id="emptyMsg" style="display:none;">No beans logged yet — add your first one above.</div>
       </div>
-      <div class="field">
-        <label for="commentsInput">Comments</label>
-        <input type="text" id="commentsInput" placeholder="Optional notes — sour, fast pour, etc.">
-      </div>
-      <button class="primary" id="saveBtn">Log brew</button>
-      <div class="status" id="statusMsg"></div>
     </div>
   </div>
 
-  <div class="card">
-    <h2>Beans</h2>
-    <div class="table-scroll">
-      <table id="beanTable">
-        <thead>
-          <tr>
-            <th>Bean</th>
-            <th>Last used</th>
-            <th>Grind</th>
-            <th>Pull time</th>
-            <th>Comments</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-      <div class="empty" id="emptyMsg" style="display:none;">No beans logged yet — add your first one above.</div>
+  <div class="view" id="historyView">
+    <button class="back-btn" id="backBtn">← Back</button>
+    <div class="card">
+      <h2>Full history</h2>
+      <div class="table-scroll">
+        <table id="historyTable">
+          <thead>
+            <tr>
+              <th>Bean</th>
+              <th>Date</th>
+              <th>Grind</th>
+              <th>Pull time</th>
+              <th>Comments</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+        <div class="empty" id="historyEmptyMsg" style="display:none;">No brews logged yet.</div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
 const STORAGE_KEY = 'coffee-beans-data';
+const HISTORY_KEY = 'coffee-log-history';
 let beans = {};
+let logs = [];
 
 const beanInput = document.getElementById('beanInput');
 const beanOptions = document.getElementById('beanOptions');
@@ -294,6 +370,12 @@ const saveBtn = document.getElementById('saveBtn');
 const statusMsg = document.getElementById('statusMsg');
 const tableBody = document.getElementById('tableBody');
 const emptyMsg = document.getElementById('emptyMsg');
+const historyToggleBtn = document.getElementById('historyToggleBtn');
+const backBtn = document.getElementById('backBtn');
+const mainView = document.getElementById('mainView');
+const historyView = document.getElementById('historyView');
+const historyBody = document.getElementById('historyBody');
+const historyEmptyMsg = document.getElementById('historyEmptyMsg');
 
 function todayStr(){
   const d = new Date();
@@ -310,16 +392,29 @@ function loadData(){
   }catch(e){
     beans = {};
   }
+  try{
+    const rawLogs = localStorage.getItem(HISTORY_KEY);
+    logs = rawLogs ? JSON.parse(rawLogs) : [];
+  }catch(e){
+    logs = [];
+  }
   renderOptions();
   renderTable();
+  renderHistory();
 }
 
 function saveData(){
   try{
     localStorage.setItem(STORAGE_KEY, JSON.stringify(beans));
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(logs));
   }catch(e){
     statusMsg.textContent = "Couldn't save — storage may be full.";
   }
+}
+
+function pullTimeClass(pullTime){
+  if(pullTime == null || pullTime === '') return '';
+  return (pullTime >= 25 && pullTime <= 35) ? 'pull-good' : 'pull-bad';
 }
 
 function renderOptions(){
@@ -344,7 +439,7 @@ function renderTable(){
       <td class="bean-name">${escapeHtml(name)}</td>
       <td>${escapeHtml(b.lastUsedDisplay || b.lastUsed || '')}</td>
       <td>${b.grindSize ?? ''}</td>
-      <td>${b.pullTime != null ? b.pullTime + 's' : ''}</td>
+      <td class="${pullTimeClass(b.pullTime)}">${b.pullTime != null ? b.pullTime + 's' : ''}</td>
       <td class="comments">${escapeHtml(b.comments || '')}</td>
       <td><button class="del-btn" data-name="${escapeHtml(name)}">Remove</button></td>
     `;
@@ -358,6 +453,25 @@ function renderTable(){
       renderOptions();
       renderTable();
     });
+  });
+}
+
+function renderHistory(){
+  const sorted = [...logs].sort((a,b)=>{
+    return (b.date + b.id).localeCompare(a.date + a.id);
+  });
+  historyBody.innerHTML = '';
+  historyEmptyMsg.style.display = sorted.length ? 'none' : 'block';
+  sorted.forEach(entry=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="bean-name">${escapeHtml(entry.name)}</td>
+      <td class="history-row-date">${escapeHtml(entry.dateDisplay || entry.date || '')}</td>
+      <td>${entry.grindSize ?? ''}</td>
+      <td class="${pullTimeClass(entry.pullTime)}">${entry.pullTime != null ? entry.pullTime + 's' : ''}</td>
+      <td class="comments">${escapeHtml(entry.comments || '')}</td>
+    `;
+    historyBody.appendChild(tr);
   });
 }
 
@@ -391,17 +505,29 @@ saveBtn.addEventListener('click', ()=>{
   const grind = grindInput.value;
   const time = timeInput.value;
 
-  beans[name] = {
-    lastUsed: isoToday(),
-    lastUsedDisplay: todayStr(),
+  const entry = {
+    id: Date.now().toString(36),
+    name: name,
+    date: isoToday(),
+    dateDisplay: todayStr(),
     grindSize: grind !== '' ? Number(grind) : null,
     pullTime: time !== '' ? Number(time) : null,
     comments: commentsInput.value.trim()
   };
 
+  beans[name] = {
+    lastUsed: entry.date,
+    lastUsedDisplay: entry.dateDisplay,
+    grindSize: entry.grindSize,
+    pullTime: entry.pullTime,
+    comments: entry.comments
+  };
+  logs.push(entry);
+
   saveData();
   renderOptions();
   renderTable();
+  renderHistory();
 
   beanInput.value = '';
   grindInput.value = '';
@@ -409,6 +535,16 @@ saveBtn.addEventListener('click', ()=>{
   commentsInput.value = '';
   revealSection.classList.remove('open');
   statusMsg.textContent = `Logged ${name}.`;
+});
+
+historyToggleBtn.addEventListener('click', ()=>{
+  mainView.classList.remove('active');
+  historyView.classList.add('active');
+});
+
+backBtn.addEventListener('click', ()=>{
+  historyView.classList.remove('active');
+  mainView.classList.add('active');
 });
 
 loadData();
