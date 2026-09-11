@@ -45,6 +45,14 @@
     margin-bottom:28px;
   }
   header svg{ flex-shrink:0; }
+  .brand-logo{
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    object-fit:cover;
+    flex-shrink:0;
+    border:1px solid var(--line);
+  }
   h1{
     font-family:'Fraunces', serif;
     font-weight:600;
@@ -262,11 +270,7 @@
 <div class="wrap">
   <div class="top-row">
     <header>
-      <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
-        <rect width="34" height="34" rx="8" fill="#7A4E2D"/>
-        <ellipse cx="17" cy="17" rx="9" ry="12" fill="#FBF6EC" transform="rotate(-25 17 17)"/>
-        <path d="M13.5 24c1-2 2-3.5 3-6s1.5-4.5 1-7" stroke="#7A4E2D" stroke-width="1.6" stroke-linecap="round" fill="none" transform="rotate(-25 17 17)"/>
-      </svg>
+      <img src="icon-192.png" alt="Beanly logo" class="brand-logo">
       <div>
         <h1>Beanly</h1>
       </div>
