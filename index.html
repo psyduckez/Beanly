@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Bean Log</title>
+<meta name="theme-color" content="#7A4E2D">
+<meta name="description" content="Track grind size and pull time for every coffee bean">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bean Log">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --espresso:#3A2618;
+    --roast:#7A4E2D;
+    --roast-dark:#5E3A20;
+    --latte:#C9AE8C;
+    --oat:#EDE3D3;
+    --card:#FBF6EC;
+    --row-alt:#F4ECDE;
+    --line:#DCC9AC;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--oat);
+    color:var(--espresso);
+    font-family:'Source Sans 3', sans-serif;
+    min-height:100vh;
+    padding:32px 16px 64px;
+  }
+  .wrap{
+    max-width:600px;
+    margin:0 auto;
+  }
+  header{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:28px;
+  }
+  header svg{ flex-shrink:0; }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:1.9rem;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  .sub{
+    margin:2px 0 0;
+    font-size:0.92rem;
+    color:var(--roast-dark);
+    opacity:0.75;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:22px 22px 20px;
+    margin-bottom:22px;
+  }
+  .card h2{
+    font-family:'Fraunces', serif;
+    font-size:1.05rem;
+    font-weight:500;
+    margin:0 0 16px;
+    color:var(--roast-dark);
+  }
+  label{
+    display:block;
+    font-size:0.82rem;
+    font-weight:600;
+    color:var(--roast-dark);
+    margin-bottom:5px;
+  }
+  input[type=text], input[type=number]{
+    width:100%;
+    font-family:inherit;
+    font-size:0.98rem;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:7px;
+    background:#fff;
+    color:var(--espresso);
+    outline:none;
+    transition:border-color .15s ease;
+  }
+  input[type=text]:focus, input[type=number]:focus{
+    border-color:var(--roast);
+  }
+  .field{ margin-bottom:14px; }
+  .row2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  .date-line{
+    font-size:0.88rem;
+    color:var(--espresso);
+    background:var(--row-alt);
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:9px 12px;
+    margin-bottom:14px;
+  }
+  .date-line b{ color:var(--roast-dark); }
+  .reveal{
+    max-height:0;
+    overflow:hidden;
+    opacity:0;
+    transition:max-height .25s ease, opacity .25s ease;
+  }
+  .reveal.open{
+    max-height:600px;
+    opacity:1;
+  }
+  button.primary{
+    width:100%;
+    background:var(--roast);
+    color:#fff;
+    border:none;
+    font-family:inherit;
+    font-size:0.98rem;
+    font-weight:600;
+    padding:12px;
+    border-radius:7px;
+    cursor:pointer;
+    margin-top:4px;
+    transition:background .15s ease;
+  }
+  button.primary:hover{ background:var(--roast-dark); }
+  button.primary:disabled{
+    background:var(--latte);
+    cursor:not-allowed;
+  }
+  .status{
+    font-size:0.85rem;
+    margin-top:10px;
+    min-height:18px;
+    color:var(--roast-dark);
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:0.9rem;
+  }
+  th, td{
+    text-align:left;
+    padding:10px 8px;
+    border-bottom:1px solid var(--line);
+  }
+  th{
+    font-size:0.72rem;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--roast-dark);
+    font-weight:600;
+  }
+  tbody tr:nth-child(odd){ background:var(--row-alt); }
+  td.bean-name{ font-weight:600; }
+  td.comments{ color:#5a4636; }
+  .del-btn{
+    background:none;
+    border:none;
+    color:var(--roast);
+    cursor:pointer;
+    font-size:0.85rem;
+    padding:2px 6px;
+    opacity:0.6;
+  }
+  .del-btn:hover{ opacity:1; }
+  .empty{
+    text-align:center;
+    padding:28px 10px;
+    color:var(--roast-dark);
+    opacity:0.7;
+    font-size:0.9rem;
+  }
+  .table-scroll{
+    overflow-x:auto;
+  }
+  .install-banner{
+    display:none;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    background:var(--roast);
+    color:#fff;
+    border-radius:9px;
+    padding:12px 14px;
+    margin-bottom:20px;
+    font-size:0.88rem;
+  }
+  .install-banner button{
+    background:#fff;
+    color:var(--roast-dark);
+    border:none;
+    border-radius:6px;
+    padding:7px 12px;
+    font-weight:600;
+    font-size:0.85rem;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+      <path d="M6 13h18v9a7 7 0 0 1-7 7H13a7 7 0 0 1-7-7v-9z" stroke="#7A4E2D" stroke-width="2" fill="#FBF6EC"/>
+      <path d="M24 15h2.5a3.5 3.5 0 0 1 0 7H24" stroke="#7A4E2D" stroke-width="2" fill="none"/>
+      <path d="M11 9c0-1.5 1.5-1.8 1.5-3.2M16 9c0-1.5 1.5-1.8 1.5-3.2" stroke="#C9AE8C" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <h1>Bean Log</h1>
+      <p class="sub">Track grind size and pull time for every bag</p>
+    </div>
+  </header>
+
+  <div class="install-banner" id="installBanner">
+    <span>Install Bean Log on this device for one-tap access.</span>
+    <button id="installBtn">Install</button>
+  </div>
+
+  <div class="card">
+    <h2>Log a brew</h2>
+    <div class="field">
+      <label for="beanInput">Bean</label>
+      <input type="text" id="beanInput" list="beanOptions" placeholder="Type or pick a bean name" autocomplete="off">
+      <datalist id="beanOptions"></datalist>
+    </div>
+
+    <div id="revealSection" class="reveal">
+      <div class="date-line">Logging for <b id="todayLabel"></b></div>
+      <div class="row2">
+        <div class="field">
+          <label for="grindInput">Grind size</label>
+          <input type="number" id="grindInput" placeholder="e.g. 18" step="0.1">
+        </div>
+        <div class="field">
+          <label for="timeInput">Pull time (sec)</label>
+          <input type="number" id="timeInput" placeholder="e.g. 28" step="1">
+        </div>
+      </div>
+      <div class="field">
+        <label for="commentsInput">Comments</label>
+        <input type="text" id="commentsInput" placeholder="Optional notes — sour, fast pour, etc.">
+      </div>
+      <button class="primary" id="saveBtn">Log brew</button>
+      <div class="status" id="statusMsg"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Beans</h2>
+    <div class="table-scroll">
+      <table id="beanTable">
+        <thead>
+          <tr>
+            <th>Bean</th>
+            <th>Last used</th>
+            <th>Grind</th>
+            <th>Pull time</th>
+            <th>Comments</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div class="empty" id="emptyMsg" style="display:none;">No beans logged yet — add your first one above.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'coffee-beans-data';
+let beans = {};
+
+const beanInput = document.getElementById('beanInput');
+const beanOptions = document.getElementById('beanOptions');
+const revealSection = document.getElementById('revealSection');
+const todayLabel = document.getElementById('todayLabel');
+const grindInput = document.getElementById('grindInput');
+const timeInput = document.getElementById('timeInput');
+const commentsInput = document.getElementById('commentsInput');
+const saveBtn = document.getElementById('saveBtn');
+const statusMsg = document.getElementById('statusMsg');
+const tableBody = document.getElementById('tableBody');
+const emptyMsg = document.getElementById('emptyMsg');
+
+function todayStr(){
+  const d = new Date();
+  return d.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+}
+function isoToday(){
+  return new Date().toISOString().slice(0,10);
+}
+
+function loadData(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    beans = raw ? JSON.parse(raw) : {};
+  }catch(e){
+    beans = {};
+  }
+  renderOptions();
+  renderTable();
+}
+
+function saveData(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(beans));
+  }catch(e){
+    statusMsg.textContent = "Couldn't save — storage may be full.";
+  }
+}
+
+function renderOptions(){
+  beanOptions.innerHTML = '';
+  Object.keys(beans).forEach(name=>{
+    const opt = document.createElement('option');
+    opt.value = name;
+    beanOptions.appendChild(opt);
+  });
+}
+
+function renderTable(){
+  const names = Object.keys(beans).sort((a,b)=>{
+    return (beans[b].lastUsed||'').localeCompare(beans[a].lastUsed||'');
+  });
+  tableBody.innerHTML = '';
+  emptyMsg.style.display = names.length ? 'none' : 'block';
+  names.forEach(name=>{
+    const b = beans[name];
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="bean-name">${escapeHtml(name)}</td>
+      <td>${escapeHtml(b.lastUsedDisplay || b.lastUsed || '')}</td>
+      <td>${b.grindSize ?? ''}</td>
+      <td>${b.pullTime != null ? b.pullTime + 's' : ''}</td>
+      <td class="comments">${escapeHtml(b.comments || '')}</td>
+      <td><button class="del-btn" data-name="${escapeHtml(name)}">Remove</button></td>
+    `;
+    tableBody.appendChild(tr);
+  });
+  tableBody.querySelectorAll('.del-btn').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      const name = e.target.getAttribute('data-name');
+      delete beans[name];
+      saveData();
+      renderOptions();
+      renderTable();
+    });
+  });
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+beanInput.addEventListener('input', ()=>{
+  const hasValue = beanInput.value.trim().length > 0;
+  revealSection.classList.toggle('open', hasValue);
+  if(hasValue){
+    todayLabel.textContent = todayStr();
+    const existing = beans[beanInput.value.trim()];
+    if(existing){
+      grindInput.value = existing.grindSize ?? '';
+      timeInput.value = existing.pullTime ?? '';
+      commentsInput.value = existing.comments ?? '';
+    }
+  }
+  statusMsg.textContent = '';
+});
+
+saveBtn.addEventListener('click', ()=>{
+  const name = beanInput.value.trim();
+  if(!name){
+    statusMsg.textContent = 'Enter a bean name first.';
+    return;
+  }
+  const grind = grindInput.value;
+  const time = timeInput.value;
+
+  beans[name] = {
+    lastUsed: isoToday(),
+    lastUsedDisplay: todayStr(),
+    grindSize: grind !== '' ? Number(grind) : null,
+    pullTime: time !== '' ? Number(time) : null,
+    comments: commentsInput.value.trim()
+  };
+
+  saveData();
+  renderOptions();
+  renderTable();
+
+  beanInput.value = '';
+  grindInput.value = '';
+  timeInput.value = '';
+  commentsInput.value = '';
+  revealSection.classList.remove('open');
+  statusMsg.textContent = `Logged ${name}.`;
+});
+
+loadData();
+
+// --- PWA install prompt (Android/Chrome) ---
+let deferredPrompt;
+const installBanner = document.getElementById('installBanner');
+const installBtn = document.getElementById('installBtn');
+
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredPrompt = e;
+  installBanner.style.display = 'flex';
+});
+
+installBtn.addEventListener('click', async ()=>{
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  installBanner.style.display = 'none';
+});
+
+window.addEventListener('appinstalled', ()=>{
+  installBanner.style.display = 'none';
+});
+
+// --- Register service worker ---
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
